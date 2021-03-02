@@ -7,22 +7,33 @@ import java.util.Scanner;
 
 public class MidiToString {
 	public static void main(String[] args) {
-		
 		Map<String, Integer> notePair = new HashMap<String, Integer>() {{
-		    put("A#4", 0);
-		    put("A4", 4);
-		    put("G#4", 9);
-		    put("G4", 15);
-		    put("F#4", 20);
-		    put("F4", 26);
-		    put("E4", 32);
-		    put("D#4", 39);
-		    put("D4", 46);
-		    put("C#4", 53);
-		    put("C4", 60);
-		    put("B3", 69);
-		    put("A#3", 77);
-		    put("A3", 85);
+			put("D5", 1);
+			put("C#5", 5);
+			put("C5", 10);
+			put("B4", 14);
+			put("A#4", 19);
+		    put("A4", 24);
+		    put("G#4", 29);
+		    put("G4", 35);
+		    put("F#4", 40);
+		    put("F4", 46);
+		    put("E4", 52);
+		    put("D#4", 59);
+		    put("D4", 66);
+		    put("C#4", 73);
+		    put("C4", 80);
+		    put("B3", 89);
+		    put("A#3", 97);
+		    put("A3", 105);
+		    put("G#3", 115);
+		    put("G3", 126);
+		    put("F#3", 137);
+		    put("F3", 149);
+		    put("E3", 161);
+		    put("D#3", 174);
+		    put("D3", 188);
+		    put("C#3", 200);
 		}};
 		
 		try {
@@ -41,6 +52,8 @@ public class MidiToString {
 			int bpm = Integer.parseInt(scan.nextLine());
 			System.out.print("Filepath: ");
 			String filePath = scan.nextLine();
+			if (filePath.contains("\""))
+				filePath = filePath.substring(1, filePath.length() - 1);
 			String contents = new Scanner(new File(filePath)).useDelimiter("\\Z").next().replaceAll(" ", "");
 			read = new Scanner(contents);
 			
