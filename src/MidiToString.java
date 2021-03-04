@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -43,8 +44,8 @@ public class MidiToString {
 			
 			Scanner scan = new Scanner(System.in);
 			Scanner read; 
-			int measure, beat, note;
-			measure = beat = note = 0;
+			int measure, beat, note, length, begin, next, count;
+			measure = beat = note = length = begin = next = count = 0;
 			
 			System.out.print("Interval: ");
 			int n = Integer.parseInt(scan.nextLine());
@@ -56,6 +57,12 @@ public class MidiToString {
 				filePath = filePath.substring(1, filePath.length() - 1);
 			String contents = new Scanner(new File(filePath)).useDelimiter("\\Z").next().replaceAll(" ", "");
 			read = new Scanner(contents);
+			
+			//while (read.hasNextLine()) {
+				//count++;
+			//}
+			//read.close();
+			//read = new Scanner(contents);
 			
 			while (read.hasNextLine()) {  // add lines into list
 				String[] parse = read.nextLine().split("\\|");
@@ -84,21 +91,36 @@ public class MidiToString {
 			}
 			read.close();
 			
+			int[] start, len, vib, notes;
+			start = new int[endList.size()];
+			len = new int[endList.size()];
+			vib = new int[endList.size()];
+			notes = new int[endList.size()];
 			startList.add(endList.get(endList.size() - 1));
 			
 			for(int i = 0; i < endList.size(); i++) {
-				int length = (int) ((endList.get(i) - startList.get(i)) * (60.0 / bpm) * 1000 / n);
-				int next = (int) ((startList.get(i + 1) - startList.get(i)) * (60.0 / bpm) * 1000 / n);
-				if (length > next) {
+				begin = (int) ((startList.get(i) - startList.get(0)) * (60.0 / bpm) * 1000 / n);
+				length = (int) ((endList.get(i) - startList.get(0)) * (60.0 / bpm) * 1000 / n);
+				next = (int) ((startList.get(i + 1) - startList.get(0)) * (60.0 / bpm) * 1000 / n);
+				if (length > next)
 					length = next;
-				}
 				int pitch = notePair.get(noteList.get(i));
 				//System.out.println("play(" + pitch + ", " + length + ", " + next + ");");
 				int vibrato = length;
-				if (length > 400)
-					vibrato = length / 2;
-				System.out.println("playV(" + pitch + ", " + length + ", " + next + ", " + vibrato + ", 2);");
+				start[i] = begin;
+				len[i] = length;
+				if ((len[i] - start[i]) > 400)
+					vibrato = len[i] - (len[i] - start[i]) / 2;
+				vib[i] = vibrato;
+				notes[i] = pitch;
+				//System.out.println("playV(" + pitch + ", " + length + ", " + vibrato + ", 2);");
+				//System.out.println("silence(" + length + ");");
 			}
+			System.out.println("int arrSize = " + endList.size() + ";");
+			System.out.println("int notes[] = {" + Arrays.toString(notes).substring(1, Arrays.toString(notes).length() - 1) + "};");
+			System.out.println("int start[] = {" + Arrays.toString(start).substring(1, Arrays.toString(start).length() - 1) + "};");
+			System.out.println("int len[] = {" + Arrays.toString(len).substring(1, Arrays.toString(len).length() - 1) + "};");
+			System.out.println("int vib[] = {" + Arrays.toString(vib).substring(1, Arrays.toString(vib).length() - 1) + "};");
 		}
 		catch (FileNotFoundException e) {
 			e.printStackTrace();
