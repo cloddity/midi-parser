@@ -38,14 +38,15 @@ public class MidiToString {
 		}};
 		
 		try {
-			ArrayList<Integer> startList = new ArrayList<Integer>();
-			ArrayList<String> noteList = new ArrayList<String>();
-			ArrayList<Integer> endList = new ArrayList<Integer>();
+			ArrayList<Integer> startList = new ArrayList<Integer>(); // 0, 100, 200...
+			ArrayList<String> noteList = new ArrayList<String>(); // 0-200
+			ArrayList<Integer> endList = new ArrayList<Integer>(); // 100, 200, 300...
 			
 			Scanner scan = new Scanner(System.in);
 			Scanner read; 
 			int measure, beat, note, length, begin, next, count;
 			measure = beat = note = length = begin = next = count = 0;
+			int factor = 5;
 			
 			System.out.print("Interval: ");
 			int n = Integer.parseInt(scan.nextLine());
@@ -91,36 +92,69 @@ public class MidiToString {
 			}
 			read.close();
 			
-			int[] start, len, vib, notes;
+			int[] start, end, endClone, endMain, vib, notes;
 			start = new int[endList.size()];
-			len = new int[endList.size()];
+			end = new int[endList.size()];
+			endClone = new int[endList.size()];
+			endMain = new int[endList.size()];
 			vib = new int[endList.size()];
 			notes = new int[endList.size()];
 			startList.add(endList.get(endList.size() - 1));
 			
+			double midiToMs = (60.0 / bpm) * 1000 / n;
+			
 			for(int i = 0; i < endList.size(); i++) {
-				begin = (int) ((startList.get(i) - startList.get(0)) * (60.0 / bpm) * 1000 / n);
-				length = (int) ((endList.get(i) - startList.get(0)) * (60.0 / bpm) * 1000 / n);
-				next = (int) ((startList.get(i + 1) - startList.get(0)) * (60.0 / bpm) * 1000 / n);
-				if (length > next)
-					length = next;
+				//begin = (int) ((startList.get(i) - startList.get(0)) * midiToMs);  // 0, 1000, 2000...
+				length = (int) ((endList.get(i) - startList.get(0)) * midiToMs);   // 1000, 2000, 3000...
+				//next = (int) ((startList.get(i + 1) - startList.get(i)) * midiToMs);  // 1000, 1000...
+				//if (length > next)
+					//length = next;
 				int pitch = notePair.get(noteList.get(i));
-				//System.out.println("play(" + pitch + ", " + length + ", " + next + ");");
-				int vibrato = length;
-				start[i] = begin;
-				len[i] = length;
-				if ((len[i] - start[i]) > 400)
-					vibrato = len[i] - (len[i] - start[i]) / 2;
-				vib[i] = vibrato;
 				notes[i] = pitch;
+				//System.out.println("play(" + pitch + ", " + length + ", " + next + ");");
+				//int vibrato = length;
+				if (i == 0) {
+					start[i] = 0;
+					end[i] = length / factor;
+					endClone[i] = length;
+				}
+				else {
+					start[i] = (int) ((startList.get(i) - startList.get(i - 1)) * midiToMs); 
+					end[i] = (int) ((endList.get(i) - endList.get(i - 1)) * midiToMs / factor); 
+					endClone[i] = (int) ((endList.get(i) - endList.get(i - 1)) * midiToMs);
+					//if (i % 2 == 0)
+						//end[i] += 1;
+				}
+				//len[i] = length;
+				//if ((len[i] - start[i]) > 400)
+					//vibrato = len[i] - (len[i] - start[i]) / 2;
+				//vib[i] = vibrato;
+				
 				//System.out.println("playV(" + pitch + ", " + length + ", " + vibrato + ", 2);");
 				//System.out.println("silence(" + length + ");");
 			}
+			
+			int diff = 0;
+			
+			for (int i = 0; i < endList.size(); i++) {
+				endMain[i] = factor * end[i];
+			}
+			
+			for (int i = 0; i < endList.size(); i++) {
+				diff += endClone[i] - endMain[i];
+			}
+			
+			for (int i = 1; i < (diff / factor); i++) { // timing correction
+				end[i * factor] += 1;
+			}
+			
+			//System.out.println(diff / factor);
 			System.out.println("int arrSize = " + endList.size() + ";");
-			System.out.println("int notes[] = {" + Arrays.toString(notes).substring(1, Arrays.toString(notes).length() - 1) + "};");
+			System.out.println("byte notes[] = {" + Arrays.toString(notes).substring(1, Arrays.toString(notes).length() - 1) + "};");
 			System.out.println("int start[] = {" + Arrays.toString(start).substring(1, Arrays.toString(start).length() - 1) + "};");
-			System.out.println("int len[] = {" + Arrays.toString(len).substring(1, Arrays.toString(len).length() - 1) + "};");
-			System.out.println("int vib[] = {" + Arrays.toString(vib).substring(1, Arrays.toString(vib).length() - 1) + "};");
+			System.out.println("byte finish[] = {" + Arrays.toString(end).substring(1, Arrays.toString(end).length() - 1) + "};");
+			System.out.println("byte factor = " + factor + ";");
+			//System.out.println("int vib[] = {" + Arrays.toString(vib).substring(1, Arrays.toString(vib).length() - 1) + "};");
 		}
 		catch (FileNotFoundException e) {
 			e.printStackTrace();
