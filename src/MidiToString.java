@@ -145,7 +145,8 @@ public class MidiToString {
 			}
 			
 			for (int i = 1; i < (diff / factor); i++) { // timing correction
-				end[i * factor] += 1;
+				if (i * factor < end.length)
+					end[i * factor] += 1;
 			}
 			
 			//System.out.println(diff / factor);
